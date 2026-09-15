@@ -1,12 +1,12 @@
 {
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Command-line editor for the Windows PATH environment variable",
   "homepage": "https://github.com/LHY0125/PathEditor",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/LHY0125/PathEditor/releases/download/v5.1.1/patheditor-cli_5.1.1_x64.exe#/patheditor.exe",
-      "hash": "sha256:9622b1d04d7d5022e2fcc75acd41a1e1dbd0ae69580ecf122cc226bff3d2c3c7"
+      "url": "https://github.com/LHY0125/PathEditor/releases/download/v5.1.2/patheditor-cli_5.1.2_x64.exe#/patheditor.exe",
+      "hash": "sha256:d64d6e69b913692fe4825386b513253ae9de2089c05a16173a2e9cfd6468ac7b"
     }
   },
   "bin": "patheditor.exe",
