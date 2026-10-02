@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scoop Bucket"
+  short_description: "Add, update, or remove app manifests in the LHY0125 scoop bucket."
+  default_prompt: "Add a new app to my scoop bucket. Follow the skill: research the upstream repo, inspect the actual release archive to confirm the bin target, write the manifest, run scripts/verify-manifest.ps1 until it reports zero failures, then commit and push and confirm CI is green."
