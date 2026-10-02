@@ -18,7 +18,8 @@
 - **必须以换行结尾**
 - **禁止行尾空格**
 - **禁止 Tab 缩进**（只用空格）
-- **`.ps1` 文件必须无 PowerShell 语法错误**（CI 用 `PSParser::Tokenize` 做词法检查）
+- **`.ps1` 文件必须无 PowerShell 语法错误**（CI 用 `PSParser::Tokenize` 做词法检查，跑在 **Windows PowerShell 5.1** 上）
+- **禁止 0 字节文件** —— CI 的空文件守卫藏在 `file newlines are CRLF` 测试里，失败信息极具误导性。`.gitkeep` 一律写说明文字（照 `scripts/`、`deprecated/` 的既有做法）
 
 > `Write` 工具在本仓库会写出 **LF** —— 用它改完文本文件必须跑一次行尾归一化。
 > `Edit` 工具无此问题（字符串替换，保留原行尾）。
@@ -43,6 +44,9 @@ $t = [System.IO.File]::ReadAllText($f)
 ## PowerShell 脚本
 
 - 中文注释；开头 `$ErrorActionPreference = 'Stop'`。
+- **字符串字面量必须纯 ASCII**（含哈希键名与输出文案）。原因：CI 的 5.1 用 `Get-Content` 按系统 ANSI 代码页读无 BOM 的 UTF-8，cp1252 下字节 `0x91`–`0x94` 会解成 `' ' " "` 智能引号，而 PowerShell 认它们是引号 → 字符串提前终止 → 报一堆 `Unexpected token`。约 6% 的常用汉字命中该区间，属概率性必炸。
+  **注释里的中文是安全的**；不要用加 BOM 绕过（CI 禁止 BOM）。
+  排查方式见 `.claude/skills/scoop-bucket/references/pitfalls.md` 3.4（按 cp1252/936/437 显式解码后词法分析，三种都须为 0）。
 - **不要解析 Scoop `bin/*.ps1` 的控制台输出** —— 它们用 `Write-Host`（走信息流 6，`2>&1` 抓不到），且多次 `-NoNewline` 会让每个片段各成一行、连 `[2][2][0]` 里的数字都被换行拆开。应改为自行发请求，或读退出码。
 - 需要捕获 `Write-Host` 输出时用 `6>&1`。
 

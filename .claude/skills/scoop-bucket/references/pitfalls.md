@@ -127,6 +127,7 @@ CI 的 `Scoop-00File.Tests.ps1` 对**仓库内所有非二进制文件**断言�
 | 行尾为 CRLF | 按 `\r\n` 切分后，任一段内不得残留 `\r` 或 `\n` |
 | 无行尾空格 | 每行不匹配 `\s+$` |
 | 无 Tab 缩进 | 每行匹配 `^[ ]*(\S|$)` |
+| **非空文件** | 0 字节会 throw —— 藏在 CRLF 测试里，见 3.3 |
 
 ### 3.1 `.gitattributes` 决定"检出后"的行尾，不决定工作区现状
 
@@ -159,6 +160,62 @@ $v.ErrorsAsString      # 空 = 通过
 ```
 
 > CI 里的 `bin/test.ps1` 需要 Pester 5.2.0 + BuildHelpers，本机通常是 Pester 3.4.0。**不要为此擅自安装模块改用户环境** —— 用上面的方式复现等价检查即可。
+
+### 3.3 CI 拒绝 0 字节文件（藏在 CRLF 测试里）
+
+`Scoop-00File.Tests.ps1` 的 `It 'file newlines are CRLF'` 开头有一个守卫：
+
+```powershell
+$content = [System.IO.File]::ReadAllText($file)
+if (!$content) { throw "File contents are null: $($file)" }
+```
+
+**任何 0 字节文件都会让这个测试抛异常，而失败项显示的名字是 `file newlines are CRLF`** ——
+极具误导性，会把人往行尾方向引。
+
+> 本仓库既有的 `.gitkeep`（`scripts/`、`deprecated/`）都**带说明文字**而非空文件 ——
+> 那正是上游模板为绕开这条规则的做法。新建 `.gitkeep` 时照做。
+
+**踩过的坑**：CCG 的 `.context` 模板会生成 0 字节的 `history/commits.jsonl` 与
+`history/archives/.gitkeep`，两者都让 CI 变红。修法是给它们内容；注意 `commits.jsonl`
+**必须写 `\r\n` 而不能只写 `\n`** —— 只写 `\n` 会反过来被 CRLF 测试判为非 CRLF。
+
+### 3.4 `.ps1` 的字符串字面量必须是纯 ASCII（5.1 + ANSI 代码页）
+
+CI 的 Code Syntax 测试跑在 **Windows PowerShell 5.1** 上，用的是：
+
+```powershell
+$contents = Get-Content -Path $scriptPath     # 没有 -Encoding
+```
+
+5.1 的 `Get-Content` 在无 BOM 时按**系统 ANSI 代码页**解码。本仓库的 `.ps1` 是无 BOM 的
+UTF-8，于是在 GitHub runner（cp1252）上会发生：
+
+- cp1252 把字节 `0x91`–`0x94` 解成 `'` `'` `"` `"` 四个**智能引号**，而 **PowerShell 认它们是引号**
+- 任何非 ASCII 字符只要某个 UTF-8 字节落在这个区间，就会**在字符串中间注入一个引号**
+- 于是字符串提前终止，报出一堆 `Unexpected token` / `Missing closing '}'`
+
+常用汉字里约 6% 命中该区间（例如破折号 `—` = `E2 80 94`），所以这**不是偶发而是概率性必炸**。
+
+**规则**：
+
+- `.ps1` 的**字符串字面量**（含哈希键名、输出文案）一律纯 ASCII
+- **注释里的中文是安全的** —— 注释到行尾即止，且 `0x80` 以上的字节不会解出换行或反引号
+- 别指望加 UTF-8 BOM 绕过：CI 的 `files do not contain leading UTF-8 BOM` 会直接判红
+
+**复现方式**（本机代码页是 65001 时测不出来，必须显式按目标代码页解码）：
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes($scriptPath)
+foreach ($cp in 1252, 936, 437) {
+    $errors = $null
+    $null = [System.Management.Automation.PSParser]::Tokenize(
+        [System.Text.Encoding]::GetEncoding($cp).GetString($bytes), [ref]$errors)
+    "cp$cp errors=$($errors.Count)"
+}
+```
+
+三种代码页都必须为 0。
 
 ---
 

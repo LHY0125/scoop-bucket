@@ -52,7 +52,8 @@ Set-Location 'D:\Code\doing_exercises\programs\scoop-bucket'
 
 - 行尾 **CRLF**（按 `\r\n` 切分后不得残留孤立 `\r` 或 `\n`）
 - 无 UTF-8 BOM、无行尾空格、无 Tab 缩进、必须以换行结尾
-- `.ps1` 必须无 PowerShell 语法错误（`PSParser::Tokenize` 词法检查）
+- **禁止 0 字节文件** —— 空文件守卫藏在 `file newlines are CRLF` 测试里，失败信息会把人往行尾方向引。`.gitkeep` 一律写说明文字
+- `.ps1` 必须无 PowerShell 语法错误 —— 且**字符串字面量必须纯 ASCII**：该测试跑在 Windows PowerShell 5.1 上，用 `Get-Content` 按系统 ANSI 代码页读取，cp1252 下中文/破折号等会被解成智能引号而**截断字符串**（注释里的中文安全）。加 BOM 不行，CI 禁止 BOM
 
 > **`Write` 工具在本仓库会写出 LF**，改完文本文件必须归一化行尾；`Edit` 工具无此问题。
 
