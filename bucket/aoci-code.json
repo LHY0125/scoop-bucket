@@ -17,7 +17,8 @@
     "bin": "aoci.exe",
     "notes": [
         "AOCI-CODE is both the 'aoci' CLI and a stdio MCP server ('aoci mcp').",
-        "MCP host config needs an absolute path that survives upgrades: \"$dir\\aoci.exe\". The Scoop shim \"$dir\\..\\..\\..\\shims\\aoci.exe\" works too.",
+        "Point MCP host config at the version-stable shim: \"$dir\\..\\..\\..\\shims\\aoci.exe\" (same file as the 'aoci' on PATH).",
+        "The underlying binary \"$dir\\aoci.exe\" behaves identically if you prefer to skip the wrapper process.",
         "Restart the agent host after 'aoci init' writes its MCP configuration."
     ],
     "checkver": {
