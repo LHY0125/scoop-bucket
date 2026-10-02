@@ -1,0 +1,45 @@
+#AOCI-CODE-VOLUME: 1
+
+===D:/Code/doing_exercises/programs/scoop-bucket/===
+.editorconfig[FC3T]: F:声明全仓编辑器风格基线：UTF-8、CRLF 换行、4 空格缩进、去除行尾空白并在文件末尾补换行 | R:- | A:- | S:root=true 终止向上级目录查找配置；YAML 单独降为 2 空格缩进
+.gitattributes[FC4T]: F:对全部文件启用 text=auto，并把工作区检出换行强制为 CRLF，仓库内部仍按 LF 存储 | R:- | A:- | S:Scoop 仅 Windows 可用，全仓 CRLF 是有意设计；单个文件改 LF 会造成整文件重写
+.gitignore[FC4T]: F:忽略编辑器临时文件、checkver 生成的 checkver-*.html 报告，以及 AOCI 为各编码 Agent 写入的机器绑定 MCP 配置及其备份 | R:- | A:- | S:各 Agent 配置由 aoci init 按本机绝对路径生成，换机器须各自重建
+.markdownlint.json[FQ2T]: F:关闭 MD013 行长度限制，并把 MD024 重复标题检查放宽为仅同级标题冲突才报错 | R:- | A:- | S:-
+AGENTS.md[SG6S]: F:面向编码 Agent 的仓库认知接入契约，说明 AOCI 认知层原理、最小 MCP 工具入口，以及认知建立、刷新门禁与收尾维护规则 | R:- | A:aoci_rules,aoci_overview,aoci_maintain,aoci_update_entry,aoci_report | S:本文件只规定接入与使用原则，并明确禁止自行重建 Onboarding、Header、Entries、数据库索引与故障恢复等专项流程；这些必须以实时 Guide、工具说明和 CLI --help 返回内容为准
+LICENSE[SG3T]: F:以 Unlicense 授予公有领域许可，声明放弃全部著作权并按现状、无任何担保地提供软件 | R:- | A:- | S:正文是 Unlicense，README 却写清单与文档以 MIT 授权
+README.md[SG6T]: F:说明本 bucket 的添加与安装方式、已收录的三个清单及其形态与许可差异，并提醒 extras bucket 中存在同名但无关的 patheditor | R:code:bucket/patheditor-gui.json,code:bucket/patheditor-cli.json,code:bucket/aoci-code.json | A:- | S:bucket 名固定为 lhy，安装命令必须带 bucket 前缀；extras/patheditor 是同名的无关项目，这条警告不能删除
+Scoop-Bucket.Tests.ps1[TQ5T]: F:引入 Scoop 自带的 Import-Bucket-Tests.ps1，由其提供对 bucket 清单结构与哈希的校验用例 | R:code:bin/test.ps1 | A:- | S:测试主体不在本仓库，而在运行时 scoop prefix scoop 指向的目录中；SCOOP_HOME 未设置时会先调用 scoop 命令解析路径，因此本地执行测试的前提是机器上已安装 Scoop
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.github/ISSUE_TEMPLATE/===
+bug-report.yml[FQ3T]: F:定义包缺陷问题的 GitHub Issue 表单，强制采集包名、预期与实际行为、复现步骤、scoop --version、scoop config 与 $PSVersionTable 的原文输出 | R:- | A:- | S:除「附加软件」外均为必填，且要求贴命令原样输出而非转述
+config.yml[FQ2T]: F:配置 Issue 选择器：保留空白 Issue 入口，并把 Scoop 本身的用法问题引导到上游 ScoopInstaller/Scoop Discussions | R:- | A:- | S:blank_issues_enabled=true 有意保留；通用问答交给上游社区
+hash-error.yml[FQ2T]: F:定义哈希校验失败专用 Issue 表单，只采集包名与版本，并要求沿用预定义标题格式 | R:- | A:- | S:表单只打 bug 标签；自动哈希修复需要 issues.yml 中的 verify 标签才触发
+package-request.yml[FQ3T]: F:定义新包请求 Issue 表单，采集包名、描述、主页、下载链接与流行度证据 | R:- | A:- | S:Criteria 1/2/3 是上游模板占位文本，本 bucket 未声明真实收录标准
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.github/===
+pull_request_template.md[SQ2T]: F:PR 描述模板，要求填写 Closes 或 Relates to 的 Issue 编号，并确认已阅读上游 Scoop 贡献指南 | R:- | A:- | S:-
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.github/workflows/===
+ci.yml[OQ7T]: F:在 windows-latest 上以 powershell 与 pwsh 双 shell 矩阵检出本 bucket 和上游 Scoop，再运行 bin/test.ps1 执行 Scoop 官方 Pester 测试套件 | R:code:bin/test.ps1 | A:- | S:两个 checkout 的 path（my_bucket 与 scoop_core）与步骤导出的 SCOOP_HOME 相互绑定，改动任一侧都会让 bin/test.ps1 找不到测试套件；fetch-depth 必须不小于 2，否则 lint 算不出变更文件集合
+excavator.yml[OQ6T]: F:每 4 小时定时并支持手动触发上游 Excavator Action，自动发现并提交 bucket 清单的版本更新 | R:- | A:- | S:permissions 必须保留 contents: write，Excavator 需要直接向仓库提交更新；收紧为只读会让该工作流静默失败而不报错
+issues.yml[OQ5T]: F:在新 Issue 打开或被标注 verify 标签时运行上游 GithubActions 的 Issue Handler，自动修正清单哈希并回写提交 | R:- | A:- | S:触发条件要求标签名精确等于 verify；重命名该标签或改用其他标签会让自动哈希修复不再运行，且不会给出任何提示
+pull_request.yml[OQ5T]: F:在 PR 打开或评论正文以 /verify 开头时运行上游 Pull Request Handler 校验清单 | R:- | A:- | S:评论触发同时要求 github.event.issue.pull_request 非空且正文以 /verify 开头并区分大小写；条件不满足时 job 被 if 直接跳过，不留日志也不报错
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.vscode/===
+extensions.json[XQ2T]: F:向工作区推荐 EditorConfig 与 PowerShell 两个 VS Code 扩展 | R:- | A:- | S:-
+settings.json[XQ3T]: F:设置工作区的 PowerShell 格式化预设与 PSScriptAnalyzer 规则路径，并把 bucket 下的 JSON 关联到 Scoop 官方 Schema | R:- | A:- | S:引用的 PSScriptAnalyzerSettings.psd1 不存在，分析设置静默失效
+
+===D:/Code/doing_exercises/programs/scoop-bucket/bin/===
+auto-pr.ps1[XQ5T]: F:薄封装上游 Scoop 的 auto-pr.ps1，把 -Dir 指向 ../bucket，在清单有新版本时向上游自动提交 PR | R:- | A:- | S:上游仓库在这里硬编码为 LHY0125/scoop-bucket:master；仓库改名、换默认分支或迁移到自建 Gitea 时必须同步修改该默认值，否则自动提 PR 会指向错误目标
+checkhashes.ps1[XQ5T]: F:薄封装上游 Scoop 的 checkhashes.ps1，对 ../bucket 下的清单校验下载哈希是否匹配 | R:- | A:- | S:-
+checkurls.ps1[XQ4T]: F:薄封装上游 Scoop 的 checkurls.ps1，检测 ../bucket 下清单中的下载 URL 是否仍可访问 | R:- | A:- | S:-
+checkver.ps1[XQ5T]: F:薄封装上游 Scoop 的 checkver.ps1，按清单里的 checkver 规则检查 ../bucket 下各包是否存在新版本 | R:- | A:- | S:运行后会在仓库根生成 checkver-*.html 报告，这些文件由 .gitignore 统一忽略，不要在提交时误加入
+formatjson.ps1[XQ4T]: F:薄封装上游 Scoop 的 formatjson.ps1，按 Scoop 约定重排 ../bucket 下清单 JSON 的字段与缩进 | R:- | A:- | S:-
+missing-checkver.ps1[XQ4T]: F:薄封装上游 Scoop 的 missing-checkver.ps1，列出缺少 checkver 字段、无法自动跟踪版本的清单 | R:- | A:- | S:-
+test.ps1[TQ6T]: F:用 Pester 以仓库根为搜索起点执行全部 .Tests.ps1，并以失败用例数作为进程退出码 | R:code:Scoop-Bucket.Tests.ps1 | A:- | S:脚本以 #Requires 硬性要求 BuildHelpers 2.0.1 以上与 Pester 5.2.0 以上，缺少任一模块脚本直接终止；结尾 exit $result.FailedCount 使退出码等于失败数，CI 直接据此判定成败
+
+===D:/Code/doing_exercises/programs/scoop-bucket/bucket/===
+aoci-code.json[FV7T]: F:定义 aoci-code 0.1.0-rc17 的 Scoop 清单，同时提供 amd64 与 arm64 两个架构，安装 aoci.exe 作为 CLI 与 stdio MCP 服务端 | R:- | A:- | S:上游 release 全标记为 pre-release，releases/latest 会返回 404，checkver 必须改用列表接口取 $[0].tag_name；MCP host 应指向版本稳定的 shims\aoci.exe
+app-name.json.template[FV4T]: F:新增包清单的空白模板，预置 Scoop 常用字段（三架构、installer、bin、persist、checkver、autoupdate）供复制填写 | R:code:bucket/patheditor-gui.json | A:- | S:Scoop 只扫描 bucket 下的 *.json，重命名成 .json 会让空版本清单进入 bucket
+patheditor-cli.json[FV8T]: F:定义 patheditor-cli 5.1.4 的 Scoop 清单，下载单文件 exe 后以 patheditor.exe 的形式暴露到 PATH | R:code:bucket/patheditor-gui.json | A:- | S:URL 末尾的 #/patheditor.exe 是 Scoop 的重命名片段，把上游冗长的文件名改成裸命令名；autoupdate 中的 URL 与 hash 的 asset 名必须同步保留该片段，否则升级后命令名会变；本清单与 patheditor-gui 共用同一上游仓库的 Release，版本号需保持一致
+patheditor-gui.json[FV8T]: F:定义 patheditor-gui 5.1.4 的 Scoop 清单，从 LHY0125/PathEditor 的 GitHub Release 取得 x64 免安装 zip，并为 PathEditor.exe 建立快捷方式 | R:code:bucket/patheditor-cli.json | A:- | S:清单没有 installer、uninstaller 与 persist 段，这是有意的免安装语义：Scoop 只解压 zip 并建快捷方式，不写注册表也不注册卸载项；shortcuts 指向的 PathEditor.exe 必须位于 zip 解压根目录，否则快捷方式创建失败
