@@ -3,3 +3,26 @@
 ._*
 page.html
 checkver-*.html
+
+# 本地测试产物（Scoop 的测试套件会生成，见 Scoop-00File.Tests.ps1）
+TestResults.xml
+
+# 操作系统 / 编辑器噪音（上游已忽略 macOS 的 ._*，这里补齐其余平台）
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 调试清单时误落到仓库根的压缩包
+# （gh release download 不带 --dir 会把产物下到 CWD；只锚定根目录，不影响子目录）
+/*.zip
+
+# AOCI agent host integration (machine-bound; do not commit)
+.mcp.json
+.mcp.json.backup.*
+.codex/config.toml
+.codex/config.toml.backup.*
+.claude/settings.local.json
+.cursor/mcp.json
+.cursor/mcp.json.backup.*
+opencode.json
+opencode.json.backup.*
