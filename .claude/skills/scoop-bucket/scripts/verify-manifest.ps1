@@ -277,7 +277,9 @@ if ($SkipDownload -or $SkipNetwork) {
             if ($cmd) { $sevenZip = $cmd.Source }
         }
         if (-not $sevenZip) {
-            Add-Skip '8. Archive contents' '7-Zip not found'
+            # 不能记成 SKIP：SKIP 不计入退出码，会让"未验证"被报成 "Safe to commit"。
+            # 找不到解压器意味着 bin/shortcuts 目标无法核实，必须按失败处理。
+            Add-Result '8. Archive contents' $false '7-Zip not found; cannot verify bin/shortcuts targets'
         } else {
             $null = & $sevenZip x $dest "-o$ext" '-xr!$PLUGINSDIR' '-xr!$TEMP' '-y' 2>&1
             if ($LASTEXITCODE -ne 0) {
