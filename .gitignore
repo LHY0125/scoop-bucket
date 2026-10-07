@@ -26,3 +26,18 @@ desktop.ini
 .cursor/mcp.json.backup.*
 opencode.json
 opencode.json.backup.*
+
+# 过程性文档：计划/调研稿，不属于仓库契约
+docs/plans/
+
+# ---------------------------------------------------------------------------
+# 以下目录**刻意保持跟踪**，不要加进本文件（后人常想"顺手忽略"）
+#
+# .aoci/          AOCI 治理资产（config.json / baseline.json），忽略则认知层失效
+# .context/       仓库的决策审计链（prefs/ + history/），是设计的一部分
+# bin/            BucketTemplate 工具链；ci.yml 末尾就是 .\my_bucket\bin\test.ps1
+# deprecated/     Scoop 约定：不再提供安装的历史清单存放处
+# scripts/        模板预建目录，供应用安装时取辅助文件
+# aoci*.txt       ⚠️ AOCI 的 scan 按 **Git 的忽略权威**取文件，被忽略会**静默跳过**
+#                 —— 不报错，只是索引建不起来。详见 CLAUDE.md「双向 gitignore」一节
+# ---------------------------------------------------------------------------
