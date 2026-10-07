@@ -2,15 +2,15 @@
 name: scoop-bucket
 description: 维护 LHY0125 个人 Scoop bucket（lhy 桶）清单的规范流程，覆盖新增应用、人工更新版本、移除应用三类操作，含 manifest 撰写要点、checkver/autoupdate 模式选择、哈希三方交叉校验与 CI 规则复现。Use when 用户要求添加应用/新包到 scoop bucket、更新 bucket 中某应用版本、从 bucket 移除应用、编写或修改 scoop manifest，或提到 lhy bucket、scoop-bucket 仓库、checkver、autoupdate、bucket 清单、scoop manifest。
 ---
-
 # Scoop Bucket 清单维护
 
-| 项 | 值 |
-| --- | --- |
-| 仓库 | `D:\Code\doing_exercises\programs\scoop-bucket`（桶名 `lhy`，分支 `master`，清单在 `bucket/*.json`） |
-| 校验脚本 | `scripts/verify-manifest.ps1`（本 skill 自带） |
-| CI | `.github/workflows/ci.yml` → `bin/test.ps1`（Pester，powershell + pwsh 双矩阵） |
-| 自动更新 | `.github/workflows/excavator.yml`，每 4 小时自动跟进新版本 |
+
+| 项       | 值                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| 仓库     | `D:\Code\doing_exercises\programs\scoop-bucket`（桶名 `lhy`，分支 `master`，清单在 `bucket/*.json`） |
+| 校验脚本 | `scripts/verify-manifest.ps1`（本 skill 自带）                                                       |
+| CI       | `.github/workflows/ci.yml` → `bin/test.ps1`（Pester，powershell + pwsh 双矩阵）                     |
+| 自动更新 | `.github/workflows/excavator.yml`，每 4 小时自动跟进新版本                                           |
 
 ## 四条铁律
 
@@ -23,11 +23,11 @@ description: 维护 LHY0125 个人 Scoop bucket（lhy 桶）清单的规范流�
 
 ## 流程 A：新增应用
 
-- [ ] A1 调研上游（描述 / 许可证 / release 与 asset 列表）
-- [ ] A2 实际下载解压，确认可执行文件在包内的准确名字与层级
-- [ ] A3 写清单
-- [ ] A4 跑校验脚本，必须 FAIL 0
-- [ ] A5 提交推送，确认 CI 绿
+- [ ]  A1 调研上游（描述 / 许可证 / release 与 asset 列表）
+- [ ]  A2 实际下载解压，确认可执行文件在包内的准确名字与层级
+- [ ]  A3 写清单
+- [ ]  A4 跑校验脚本，必须 FAIL 0
+- [ ]  A5 提交推送，确认 CI 绿
 
 ### A1 调研
 
