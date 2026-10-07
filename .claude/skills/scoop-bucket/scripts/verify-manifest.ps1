@@ -82,6 +82,22 @@ function Add-Skip {
     Write-Host ("  [SKIP] {0} -- {1}" -f $Name, $Why) -ForegroundColor DarkGray
 }
 
+# 计算文件 SHA256（小写十六进制）。
+# 刻意不用 Get-FileHash：它来自 Microsoft.PowerShell.Utility，而本机 PSModulePath 把
+# pwsh 7 的 Modules 目录排在 Windows PowerShell 5.1 之前，5.1 会静默加载不兼容的
+# 7.0.0.0 版模块并失败（Import-Module 不报错但命令仍不可用）。改用 .NET 直接算，
+# 不依赖模块自动加载，5.1 与 7.x 行为一致。
+function Get-Sha256 {
+    param([Parameter(Mandatory)][string]$Path)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($Path)
+        try {
+            return ([System.BitConverter]::ToString($sha.ComputeHash($stream)) -replace '-', '').ToLower()
+        } finally { $stream.Dispose() }
+    } finally { $sha.Dispose() }
+}
+
 # ---------- 解析路径 ----------
 if (-not (Test-Path -LiteralPath $ManifestPath)) {
     Write-Host "Manifest not found: $ManifestPath" -ForegroundColor Red
@@ -90,6 +106,9 @@ if (-not (Test-Path -LiteralPath $ManifestPath)) {
 $manifest = (Resolve-Path -LiteralPath $ManifestPath).Path
 $appName = [System.IO.Path]::GetFileNameWithoutExtension($manifest)
 $repoRoot = if (Test-Path -LiteralPath $BucketRepo) { (Resolve-Path -LiteralPath $BucketRepo).Path } else { $null }
+
+# Scoop 安装根（顶层定义，供步骤 3 与步骤 8 共用）
+$scoopHome = if ($env:SCOOP_HOME) { $env:SCOOP_HOME } else { (scoop prefix scoop) }
 
 Write-Host "`n=== Verify manifest: $appName ===" -ForegroundColor Cyan
 Write-Host "Path: $manifest`n"
@@ -124,7 +143,6 @@ else { Add-Result '2. Required fields' $false ("missing: " + ($missing -join ', 
 
 # ---------- 3) Scoop Schema 校验 ----------
 try {
-    $scoopHome = if ($env:SCOOP_HOME) { $env:SCOOP_HOME } else { (scoop prefix scoop) }
     $dll = Join-Path $scoopHome 'supporting\validator\bin\Scoop.Validator.dll'
     $schema = Join-Path $scoopHome 'schema.json'
     if ((Test-Path -LiteralPath $dll) -and (Test-Path -LiteralPath $schema)) {
@@ -236,26 +254,51 @@ if ($SkipDownload -or $SkipNetwork) {
         Write-Host "  downloading: $url" -ForegroundColor DarkGray
         Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing -MaximumRedirection 5
 
-        $actual = (Get-FileHash -LiteralPath $dest -Algorithm SHA256).Hash.ToLower()
+        $actual = (Get-Sha256 $dest)
         $declared = ($arch.hash -replace '^sha256:', '').ToLower()
         Add-Result '7. Hash check' ($actual -eq $declared) $(if ($actual -eq $declared) { $actual.Substring(0,16) + '...' } else { "declared=$($declared.Substring(0,16))... actual=$($actual.Substring(0,16))..." })
 
-        # 解压列出内容
+        # 解压列出内容。
+        # 用 7-Zip 而非 Expand-Archive：后者只认 zip，而 bucket 里存在 NSIS 安装器
+        # （.exe）、.7z、.tar.gz 等形态。7z 覆盖全部，且与 Scoop 自身的解压器一致。
+        # 排除 $PLUGINSDIR / $TEMP 与 Scoop 的 pre_install 保持一致，避免把
+        # NSIS 载荷目录当成"包内文件"而误判 bin 目标。
         $ext = Join-Path $tmp 'x'
-        Expand-Archive -LiteralPath $dest -DestinationPath $ext -Force
-        $entries = Get-ChildItem -LiteralPath $ext -Recurse -File | ForEach-Object { $_.FullName.Substring($ext.Length + 1).Replace('\', '/') }
-        Write-Host "  archive contents:" -ForegroundColor DarkGray
-        $entries | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
-
-        # 校验 bin / shortcuts 指向的文件确实存在
-        $targets = @()
-        if ($json.bin) { $targets += @($json.bin | ForEach-Object { if ($_ -is [string]) { $_ } else { $_[0] } }) }
-        if ($json.shortcuts) { $targets += @($json.shortcuts | ForEach-Object { $_[0] }) }
-        $missingBin = @($targets | Where-Object { $_ -and -not (Test-Path -LiteralPath (Join-Path $ext $_)) })
-        if ($missingBin.Count -eq 0) {
-            Add-Result '8. Archive contents' $true "bin/shortcuts targets present: $($targets -join ', ')"
+        New-Item -ItemType Directory -Path $ext -Force | Out-Null
+        # 自行定位 7z：不调用 Scoop 的 Get-HelperPath（本脚本不加载 Scoop 的 lib）。
+        # 顺序：Scoop 内置 helper -> PATH 上的 7z。
+        $sevenZip = $null
+        $helper = Join-Path $scoopHome 'apps\7zip\current\7z.exe'
+        if (Test-Path -LiteralPath $helper) {
+            $sevenZip = $helper
         } else {
-            Add-Result '8. Archive contents' $false "not found in archive: $($missingBin -join ', ')"
+            $cmd = Get-Command 7z -CommandType Application -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($cmd) { $sevenZip = $cmd.Source }
+        }
+        if (-not $sevenZip) {
+            Add-Skip '8. Archive contents' '7-Zip not found'
+        } else {
+            $null = & $sevenZip x $dest "-o$ext" '-xr!$PLUGINSDIR' '-xr!$TEMP' '-y' 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Add-Result '8. Archive contents' $false "7-Zip could not extract (exit $LASTEXITCODE)"
+            } else {
+                $entries = Get-ChildItem -LiteralPath $ext -Recurse -File |
+                    ForEach-Object { $_.FullName.Substring($ext.Length + 1).Replace('\', '/') }
+                Write-Host "  archive contents:" -ForegroundColor DarkGray
+                $entries | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+
+                # 校验 bin / shortcuts 指向的文件确实存在
+                $targets = @()
+                if ($json.bin) { $targets += @($json.bin | ForEach-Object { if ($_ -is [string]) { $_ } else { $_[0] } }) }
+                if ($json.shortcuts) { $targets += @($json.shortcuts | ForEach-Object { $_[0] }) }
+                $missingBin = @($targets | Where-Object { $_ -and -not (Test-Path -LiteralPath (Join-Path $ext $_)) })
+                if ($missingBin.Count -eq 0) {
+                    Add-Result '8. Archive contents' $true "bin/shortcuts targets present: $($targets -join ', ')"
+                } else {
+                    Add-Result '8. Archive contents' $false "not found in archive: $($missingBin -join ', ')"
+                }
+            }
         }
     } catch {
         Add-Result '7. Hash check' $false $_.Exception.Message
