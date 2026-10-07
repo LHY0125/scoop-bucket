@@ -1,1 +1,3 @@
 
+{"date":"2026-10-07T18:39:39+08:00","commit":"c3ff6e2","summary":"feat: add agency-agents-app manifest (portable)","decisions":["pre_install+7zip over NSIS installer","exclude PLUGINSDIR/TEMP"],"bugs":[],"risk":"upstream may switch to InnoSetup or ship a portable zip"}
+{"date":"2026-10-07T18:39:39+08:00","commit":"a9c1791","summary":"fix: verify-manifest.ps1 hash + extraction defects","decisions":["replace Get-FileHash with .NET SHA256","replace Expand-Archive with 7-Zip"],"bugs":["Get-FileHash unavailable under PS 5.1 due to PSModulePath ordering","step-8 exception misattributed to step 7"],"risk":"low"}

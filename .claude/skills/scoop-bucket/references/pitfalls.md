@@ -75,17 +75,18 @@ $after = (Get-FileHash $m -Algorithm SHA256).Hash
 
 ## 二、清单字段速查
 
-| 字段 | 要点 |
-| --- | --- |
-| `version` | 与 tag 一致但**去掉 `v` 前缀**（tag `v0.1.0-rc17` → `0.1.0-rc17`）；asset 名里通常是去掉 `v` 的形式 |
-| `description` | 一句话，不要重复应用名，不要以句号结尾 |
-| `license` | 用 SPDX 标识符。GitHub API 返回 `NOASSERTION` 时读 `LICENSE` 正文首行 |
-| `architecture` | 同时有 amd64/arm64 时两个都写；Scoop 在 arm64 无对应项时会自动回退 `64bit` |
-| `bin` | 值必须是**压缩包内**的真实相对路径。写完务必用脚本第 8 项验证 |
-| `shortcuts` | 数组套数组：`[["app.exe", "显示名"]]`；指向的 exe 同样要在包内存在 |
-| `notes` | 只支持 `$dir`、`$original_dir`、`$persist_dir` 三个替换变量（`install.ps1:359`），**没有 `$shimdir`** |
-| `##` | 注释字段，用来记录非常规决策（如 1.1 的 prerelease 原因） |
-| `checkver` / `autoupdate` | 见第一节 |
+
+| 字段                      | 要点                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `version`                 | 与 tag 一致但**去掉 `v` 前缀**（tag `v0.1.0-rc17` → `0.1.0-rc17`）；asset 名里通常是去掉 `v` 的形式 |
+| `description`             | 一句话，不要重复应用名，不要以句号结尾                                                               |
+| `license`                 | 用 SPDX 标识符。GitHub API 返回`NOASSERTION` 时读 `LICENSE` 正文首行                                 |
+| `architecture`            | 同时有 amd64/arm64 时两个都写；Scoop 在 arm64 无对应项时会自动回退`64bit`                            |
+| `bin`                     | 值必须是**压缩包内**的真实相对路径。写完务必用脚本第 8 项验证                                        |
+| `shortcuts`               | 数组套数组：`[["app.exe", "显示名"]]`；指向的 exe 同样要在包内存在                                   |
+| `notes`                   | 只支持`$dir`、`$original_dir`、`$persist_dir` 三个替换变量（`install.ps1:359`），**没有 `$shimdir`** |
+| `##`                      | 注释字段，用来记录非常规决策（如 1.1 的 prerelease 原因）                                            |
+| `checkver` / `autoupdate` | 见第一节                                                                                             |
 
 ### 2.1 `notes` 里的路径：`current` 是一层目录
 
@@ -120,14 +121,15 @@ $dir\..\..\shims\<app>.exe        ⇒  ...\Scoop\apps\shims\<app>.exe  ❌
 
 CI 的 `Scoop-00File.Tests.ps1` 对**仓库内所有非二进制文件**断言，只需一条不过就红：
 
-| 规则 | 判据 |
-| --- | --- |
-| 无 UTF-8 BOM | 前三字节不得是 `EF BB BF` |
-| 以换行结尾 | 最后一个字符必须是 `\n` |
-| 行尾为 CRLF | 按 `\r\n` 切分后，任一段内不得残留 `\r` 或 `\n` |
-| 无行尾空格 | 每行不匹配 `\s+$` |
-| 无 Tab 缩进 | 每行匹配 `^[ ]*(\S|$)` |
-| **非空文件** | 0 字节会 throw —— 藏在 CRLF 测试里，见 3.3 |
+
+| 规则         | 判据                                           |
+| -------------- | ------------------------------------------------ |
+| 无 UTF-8 BOM | 前三字节不得是`EF BB BF`                       |
+| 以换行结尾   | 最后一个字符必须是`\n`                         |
+| 行尾为 CRLF  | 按`\r\n` 切分后，任一段内不得残留 `\r` 或 `\n` |
+| 无行尾空格   | 每行不匹配`\s+$`                               |
+| 无 Tab 缩进  | 每行匹配 `^[ ]*(\S                             |
+| **非空文件** | 0 字节会 throw —— 藏在 CRLF 测试里，见 3.3   |
 
 ### 3.1 `.gitattributes` 决定"检出后"的行尾，不决定工作区现状
 
@@ -217,9 +219,88 @@ foreach ($cp in 1252, 936, 437) {
 
 三种代码页都必须为 0。
 
+### 3.5 Scoop **不会**自动解压 `.exe` 类型的 URL
+
+`lib/decompress.ps1` 的 `Invoke-Extraction` 按**文件扩展名**分派解压方式：
+
+```powershell
+switch -regex ($Name[$i]) {
+    '\.zip$' { $extractFn = 'Expand-7zipArchive' }   # 或 Expand-ZipArchive
+    '\.msi$' { $extractFn = 'Expand-MsiArchive' }
+    '\.exe$' { if ($Manifest.innosetup) { $extractFn = 'Expand-InnoArchive' } ; continue }
+    { Test-7zipRequirement -Uri $_ } { $extractFn = 'Expand-7zipArchive' }
+}
+```
+
+两个要点：
+
+1. `.exe` 分支**只在 `innosetup` 为真时**才解压，且只走 InnoSetup 解压器
+2. 兜底的 `Test-7zipRequirement`（`lib/depends.ps1`）正则**不匹配 `.exe`**：
+
+   ```
+   \.(001|7z|bz(ip)?2?|gz|img|iso|lzma|lzh|nupkg|rar|tar|t[abgpx]z2?|t?zst|xz)(\.[^\d.]+)?$
+   ```
+
+**后果**：`"url"` 指向 `.exe` 时，Scoop 会把文件**原样放进安装目录**，然后找不到 `bin` 指向的目标。
+"7z 能解开这个文件" ≠ "Scoop 会去解开它" —— 前者是格式能力，后者是按扩展名的分派。
+
+**对策**：用 `pre_install` 显式解压。`Expand-7zipArchive` 在 `pre_install` 中**可直接调用**
+（`libexec/scoop-install.ps1` 会 dot-source `lib/decompress.ps1`），`$dir` / `$version` /
+`$original_dir` / `$persist_dir` 也都可见（`Invoke-HookScript` 用 `Invoke-Command` 跑脚本块，
+动态作用域能看到调用方的局部变量）。
+
+```json
+"pre_install": "Expand-7zipArchive -Path \"$dir\\App_${version}_x64-setup.exe\" -DestinationPath $dir -Switches '-xr!$PLUGINSDIR -xr!$TEMP' -Removal"
+```
+
+⚠️ **`-Switches` 是单个字符串，不是数组**。写成 `-Switches '-xr!A' '-xr!B'` 会报
+`A positional parameter cannot be found that accepts argument '-xr!B'`；必须写成
+`-Switches '-xr!A -xr!B'`（函数内部会 `-split`）。
+
+⚠️ **排除开关要自己加**。源码里 `Expand-7zipArchive` 只有 `-xr!*.nsis` 一条内置排除，
+网上流传的"自动排除 `$PLUGINSDIR`/`$TEMP`"**在本机这份 Scoop 上不成立**。
+不加的话 NSIS 载荷目录（`$PLUGINSDIR\System.dll`、`$TEMP\MicrosoftEdgeWebview2Setup.exe` 等）
+会污染安装目录。
+
+**判据**：安装后 `ls apps\<app>\current\`，不应出现 `$PLUGINSDIR` / `$TEMP`。
+
 ---
 
 ## 四、工具使用陷阱
+
+### 4.0 `Get-FileHash` 在本机 Windows PowerShell 5.1 下不可用
+
+本机 `PSModulePath` 把 **pwsh 7 的 Modules 目录排在 5.1 之前**：
+
+```
+...;d:\settings\settings\scoop\apps\powershell\current\Modules;D:\settings\settings\Scoop\modules;...
+```
+
+于是 5.1 会去加载 pwsh 7 的 `Microsoft.PowerShell.Utility 7.0.0.0`，**静默失败**：
+
+```powershell
+powershell -NoProfile -Command "[bool](Get-Command Get-FileHash -EA SilentlyContinue)"
+# False —— 且 Import-Module Microsoft.PowerShell.Utility 也不报错但无效
+```
+
+显式指定 5.1 路径才成功（`C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\...`）。
+
+**对策**：跨版本脚本里**优先用 .NET API 而不是 cmdlet**，可完全绕开模块加载问题：
+
+```powershell
+function Get-Sha256 {
+    param([Parameter(Mandatory)][string]$Path)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($Path)
+        try { return ([System.BitConverter]::ToString($sha.ComputeHash($stream)) -replace '-', '').ToLower() }
+        finally { $stream.Dispose() }
+    } finally { $sha.Dispose() }
+}
+```
+
+> 同类问题：`Expand-Archive` 只认 zip，遇到 `.7z` / `.tar.gz` / NSIS 会抛异常。
+> 校验脚本里改用 7-Zip（`apps\7zip\current\7z.exe`），与 Scoop 自身解压器一致。
 
 ### 4.1 `formatjson` 会重写整个目录
 
