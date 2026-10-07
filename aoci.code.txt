@@ -3,12 +3,13 @@
 ===D:/Code/doing_exercises/programs/scoop-bucket/===
 .editorconfig[FC3T]: F:声明全仓编辑器风格基线：UTF-8、CRLF 换行、4 空格缩进、去除行尾空白并在文件末尾补换行 | R:- | A:- | S:root=true 终止向上级目录查找配置；YAML 单独降为 2 空格缩进
 .gitattributes[FC4T]: F:对全部文件启用 text=auto，并把工作区检出换行强制为 CRLF，仓库内部仍按 LF 存储 | R:- | A:- | S:Scoop 仅 Windows 可用，全仓 CRLF 是有意设计；单个文件改 LF 会造成整文件重写
-.gitignore[FC4T]: F:忽略编辑器临时文件、checkver 生成的 checkver-*.html 报告，以及 AOCI 为各编码 Agent 写入的机器绑定 MCP 配置及其备份 | R:- | A:- | S:各 Agent 配置由 aoci init 按本机绝对路径生成，换机器须各自重建
+.gitignore[FC5S]: F:忽略编辑器临时文件、checkver 生成的 checkver-*.html 报告、Scoop 测试产物 TestResults.xml、跨平台系统噪音，以及 AOCI 为各编码 Agent 写入的机器绑定 MCP 配置及其备份 | R:- | A:- | S:aoci.txt、aoci.meta.txt、aoci.code.txt 与 AGENTS.md 绝不能加进本文件 —— AOCI 的 scan 按 Git 的忽略权威取文件，被忽略会静默跳过、索引建不起来
 .markdownlint.json[FQ2T]: F:关闭 MD013 行长度限制，并把 MD024 重复标题检查放宽为仅同级标题冲突才报错 | R:- | A:- | S:-
 AGENTS.md[SG6S]: F:面向编码 Agent 的仓库认知接入契约，说明 AOCI 认知层原理、最小 MCP 工具入口，以及认知建立、刷新门禁与收尾维护规则 | R:- | A:aoci_rules,aoci_overview,aoci_maintain,aoci_update_entry,aoci_report | S:本文件只规定接入与使用原则，并明确禁止自行重建 Onboarding、Header、Entries、数据库索引与故障恢复等专项流程；这些必须以实时 Guide、工具说明和 CLI --help 返回内容为准
 LICENSE[SG3T]: F:以 Unlicense 授予公有领域许可，声明放弃全部著作权并按现状、无任何担保地提供软件 | R:- | A:- | S:正文是 Unlicense，README 却写清单与文档以 MIT 授权
-README.md[SG6T]: F:说明本 bucket 的添加与安装方式、已收录的三个清单及其形态与许可差异，并提醒 extras bucket 中存在同名但无关的 patheditor | R:code:bucket/patheditor-gui.json,code:bucket/patheditor-cli.json,code:bucket/aoci-code.json | A:- | S:bucket 名固定为 lhy，安装命令必须带 bucket 前缀；extras/patheditor 是同名的无关项目，这条警告不能删除
+README.md[SS6S]: F:说明本 bucket 的添加与安装方式、已收录的四个清单及其形态与许可差异，并提醒 extras bucket 中存在同名但无关的 patheditor | R:code:bucket/patheditor-gui.json,code:bucket/patheditor-cli.json,code:bucket/aoci-code.json,code:bucket/agency-agents-app.json | A:- | S:bucket 名固定为 lhy，安装命令必须带 bucket 前缀；extras/patheditor 是同名的无关项目，这条警告不能删除
 Scoop-Bucket.Tests.ps1[TQ5T]: F:引入 Scoop 自带的 Import-Bucket-Tests.ps1，由其提供对 bucket 清单结构与哈希的校验用例 | R:code:bin/test.ps1 | A:- | S:测试主体不在本仓库，而在运行时 scoop prefix scoop 指向的目录中；SCOOP_HOME 未设置时会先调用 scoop 命令解析路径，因此本地执行测试的前提是机器上已安装 Scoop
+CLAUDE.md[SS8M]: F:向 Claude Code 说明本仓库性质、三层自动化闭环、文件级 CI 规则、清单约定、双向 gitignore 与 AOCI 认知层 | R:code:README.md,code:.claude/skills/scoop-bucket/SKILL.md,code:.context/prefs/coding-style.md | A:三层自动化闭环,文件级规则,清单约定,双向gitignore,AOCI认知层 | S:三层自动化闭环（autoupdate 块 → excavator → CI）互相咬合，checkver/autoupdate 写错不会立刻报错、只会让 excavator 静默失效；lhy 桶在 Scoop 里注册的是 git 远端，未推送的清单用 scoop checkver 看不到，必须传文件路径；bin/ 与 Scoop-Bucket.Tests.ps1 是模板自带，不要为改进而手改
 
 ===D:/Code/doing_exercises/programs/scoop-bucket/.github/ISSUE_TEMPLATE/===
 bug-report.yml[FQ3T]: F:定义包缺陷问题的 GitHub Issue 表单，强制采集包名、预期与实际行为、复现步骤、scoop --version、scoop config 与 $PSVersionTable 的原文输出 | R:- | A:- | S:除「附加软件」外均为必填，且要求贴命令原样输出而非转述
@@ -39,7 +40,35 @@ missing-checkver.ps1[XQ4T]: F:薄封装上游 Scoop 的 missing-checkver.ps1，�
 test.ps1[TQ6T]: F:用 Pester 以仓库根为搜索起点执行全部 .Tests.ps1，并以失败用例数作为进程退出码 | R:code:Scoop-Bucket.Tests.ps1 | A:- | S:脚本以 #Requires 硬性要求 BuildHelpers 2.0.1 以上与 Pester 5.2.0 以上，缺少任一模块脚本直接终止；结尾 exit $result.FailedCount 使退出码等于失败数，CI 直接据此判定成败
 
 ===D:/Code/doing_exercises/programs/scoop-bucket/bucket/===
-aoci-code.json[FV7T]: F:定义 aoci-code 0.1.0-rc17 的 Scoop 清单，同时提供 amd64 与 arm64 两个架构，安装 aoci.exe 作为 CLI 与 stdio MCP 服务端 | R:- | A:- | S:上游 release 全标记为 pre-release，releases/latest 会返回 404，checkver 必须改用列表接口取 $[0].tag_name；MCP host 应指向版本稳定的 shims\aoci.exe
+aoci-code.json[FD7S]: F:定义 aoci-code 0.1.0-rc18 的 Scoop 清单，同时提供 amd64 与 arm64 两个架构，安装 aoci.exe 作为 CLI 与 stdio MCP 服务端 | R:- | A:- | S:上游 release 全标记为 pre-release，releases/latest 会返回 404，checkver 必须改用列表接口取 $[0].tag_name；MCP host 应指向版本稳定的 shims\aoci.exe
 app-name.json.template[FV4T]: F:新增包清单的空白模板，预置 Scoop 常用字段（三架构、installer、bin、persist、checkver、autoupdate）供复制填写 | R:code:bucket/patheditor-gui.json | A:- | S:Scoop 只扫描 bucket 下的 *.json，重命名成 .json 会让空版本清单进入 bucket
 patheditor-cli.json[FV8T]: F:定义 patheditor-cli 5.1.4 的 Scoop 清单，下载单文件 exe 后以 patheditor.exe 的形式暴露到 PATH | R:code:bucket/patheditor-gui.json | A:- | S:URL 末尾的 #/patheditor.exe 是 Scoop 的重命名片段，把上游冗长的文件名改成裸命令名；autoupdate 中的 URL 与 hash 的 asset 名必须同步保留该片段，否则升级后命令名会变；本清单与 patheditor-gui 共用同一上游仓库的 Release，版本号需保持一致
 patheditor-gui.json[FV8T]: F:定义 patheditor-gui 5.1.4 的 Scoop 清单，从 LHY0125/PathEditor 的 GitHub Release 取得 x64 免安装 zip，并为 PathEditor.exe 建立快捷方式 | R:code:bucket/patheditor-cli.json | A:- | S:清单没有 installer、uninstaller 与 persist 段，这是有意的免安装语义：Scoop 只解压 zip 并建快捷方式，不写注册表也不注册卸载项；shortcuts 指向的 PathEditor.exe 必须位于 zip 解压根目录，否则快捷方式创建失败
+agency-agents-app.json[FD7M]: F:定义 agency-agents-app 0.3.2 的 Scoop 清单，同时提供 64bit 与 arm64 两个架构，安装 agency-agents-app.exe 并创建开始菜单快捷方式 | R:- | A:pre_install解包 | S:上游只发 NSIS 安装器，而 Scoop 不会自动解压 .exe 类型的 URL（.exe 分支只在 innosetup 为真时才走），故必须用 pre_install 调 7-Zip 手动解包，并自行排除 $PLUGINSDIR/$TEMP
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.claude/skills/scoop-bucket/===
+SKILL.md[SL7T]: F:定义维护 lhy 桶清单的三条流程（新增/更新/移除）与四条铁律，把每次加应用都要重新推导的步骤固化下来 | R:code:.claude/skills/scoop-bucket/scripts/verify-manifest.ps1,code:.claude/skills/scoop-bucket/references/pitfalls.md | A:流程A新增应用,流程B更新版本,流程C移除应用 | S:四条铁律中「删文件先取得书面同意」源自用户全局规则，移除应用前必须获准；流程A5 的 git pull --ff-only 不能省，excavator 每 4 小时自动提交会让本地落后而 push 被拒
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.claude/skills/scoop-bucket/agents/===
+openai.yaml[FC3T]: F:向 Codex 声明本 skill 的界面文案（显示名、简述、默认提示词） | R:- | A:- | S:-
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.claude/skills/scoop-bucket/references/===
+pitfalls.md[SL8M]: F:沉淀建清单时实测所得的踩坑与字段速查，每条带判据或复现方式，是动清单前的必读材料 | R:code:.claude/skills/scoop-bucket/scripts/verify-manifest.ps1,code:.claude/skills/scoop-bucket/SKILL.md | A:checkver与autoupdate,字段速查,文件级规则,工具使用陷阱,验证方法学 | S:Scoop 的 jsonpath 底层是 Newtonsoft SelectTokens（完整 JSONPath）；autoupdate 写回会剥掉 sha256: 前缀故静态 hash 用裸十六进制；notes 只支持 $dir/$original_dir/$persist_dir 三个替换变量且 scoop info 把 $dir 渲染成 <root>，光看输出发现不了路径写错
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.claude/skills/scoop-bucket/scripts/===
+verify-manifest.ps1[SL8L]: F:一次覆盖 CI 会跑的全部检查（schema、必填字段、文件级规则、checkver、URL 可��性、哈希实测、包内 bin 目标、notes 路径），退出码 0 才可提交 | R:code:.claude/skills/scoop-bucket/references/pitfalls.md | A:Add-Result,Add-Skip,Get-Sha256 | S:字符串字面量必须纯 ASCII：CI 的 Code Syntax 测试跑在 PowerShell 5.1 上并按系统 ANSI 代码页读取，cp1252 下字节 0x91-0x94 会解成智能引号而截断字符串（注释里的中文安全）；刻意不用 Get-FileHash（本机 PSModulePath 使 5.1 静默加载不兼容模块）与 Expand-Archive（只认 zip），改用 .NET SHA256 与 7-Zip
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.context/===
+.gitattributes[FC4T]: F:为 .context 下的 JSONL 历史文件声明 union 合并策略，降低多分支并行追加时的冲突 | R:- | A:- | S:只对 history/ 下的 jsonl 生效，且必须保持 append-only
+.gitignore[FC4T]: F:把 .context 的临时工作区与原始交互日志排除出 Git，只让决策审计链的��式产物入库 | R:- | A:- | S:current/ 与 session.log 不入库，决策日志仅存本地；可提交的只有 history/commits.jsonl 与 commits.md
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.context/history/===
+commits.jsonl[FD4T]: F:以 append-only 的 JSONL 形式存放决策历史的权威记录，commits.md 是它的人类可读视图 | R:code:.context/history/commits.md | A:- | S:本文件是 Canonical store，必须保持 append-only，且不得为空（Scoop bucket CI 拒绝 0 字节文件）
+commits.md[FS4T]: F:以表格形式呈现决策历史，供人直接阅读 | R:code:.context/history/commits.jsonl | A:- | S:本文件是 commits.jsonl 的派生视图，可由工具重生成，故不应手工写入 jsonl 中不存在的内容
+
+===D:/Code/doing_exercises/programs/scoop-bucket/.context/prefs/===
+coding-style.md[SS6S]: F:定义本仓库的编码规范，含文件级硬约束、JSON 清单约定、PowerShell 脚本规则与提交规范 | R:code:CLAUDE.md,code:.context/prefs/workflow.md | A:- | S:文件级硬约束与 Scoop-00File.Tests.ps1 一一对应；Write 工具会写出 LF，改完须归一化行尾；禁止对 bucket/ 整目录跑 formatjson 或 checkver -ForceUpdate，它们会就地重写
+workflow.md[SS5T]: F:定义 LLM 开发工作流的强制步骤（feat/fix/refactor 三类）与决策记录规则 | R:code:.context/prefs/coding-style.md,code:.context/.gitignore | A:feat流程,fix流程,refactor流程,决策记录 | S:要求把方案选择、Bug 根因、架构决策与放弃的方案追加到 current/branches/<分支>/session.log，但该路径被 .context/.gitignore 排除，故这些日志是本地文件、不入库
+
+===D:/Code/doing_exercises/programs/scoop-bucket/docs/plans/===
+agency-agents-app.md[SS7M]: F:记录为 agency-agents-app 建清单的完整调研、执行步骤、发现的三处偏差与风险对策 | R:code:bucket/agency-agents-app.json | A:执行步骤A1-A6,风险与对策,验收标准 | S:该文件属过程性文档，docs/plans/ 已在 .gitignore 中，但本文件因先于规则被提交而仍受跟踪（.gitignore 对已跟踪文件无效）；草案中的 pre_install 写法经实测修正，不可照抄

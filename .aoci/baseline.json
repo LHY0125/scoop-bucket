@@ -1,8 +1,68 @@
 {
   "version": 1,
   "created_at": "2026-10-02T17:14:30Z",
-  "updated_at": "2026-10-02T17:37:40Z",
+  "updated_at": "2026-10-07T11:00:31Z",
   "files": {
+    ".claude/skills/scoop-bucket/SKILL.md": {
+      "role": "index",
+      "sha256": "2f558aee21c7862f2fd4969a3f6c2c407d870f639e38abc6ef6b6566ec105a4d",
+      "size": 5392,
+      "normalized_sha256": "aace1efcf880a0c5f0100a5f299457672e8ebb8c06cadef519e62623f03ba1e1"
+    },
+    ".claude/skills/scoop-bucket/agents/openai.yaml": {
+      "role": "index",
+      "sha256": "a2105beda27c0747066c6b8ec4df582a8edbba41aace9b5f5ce93bf230da0014",
+      "size": 427,
+      "normalized_sha256": "d8ec8b7ede54a8fddeb9ddc4ed6539a38a02daceb4c075dd190b06e012d72a9b"
+    },
+    ".claude/skills/scoop-bucket/references/pitfalls.md": {
+      "role": "index",
+      "sha256": "ab08c5c1710f1cd329c7f1d9dbd0b8e9349364beb2d3dbbe00d5c5c9c4bdf281",
+      "size": 18525,
+      "normalized_sha256": "2de81a354f9d37f1f923cce3a7bc696701f177848976ecd1c3d4e400d64442e5"
+    },
+    ".claude/skills/scoop-bucket/scripts/verify-manifest.ps1": {
+      "role": "index",
+      "sha256": "b5cf55dc46c9df186ce64edd50d5a31c08490dfe03abca398f61cef3574caba7",
+      "size": 17007,
+      "normalized_sha256": "c1e919cb983f375d4d97c396b07b661a7666ef7c298efc2c55b2ceac256d4715"
+    },
+    ".context/.gitattributes": {
+      "role": "index",
+      "sha256": "ebc2435ab8c59be0d973fe0d87b29119e39c1f611dad8dabbf8442ae91405e4d",
+      "size": 127,
+      "normalized_sha256": "5250942c18cbc44da30716a5bef867be60db1d96c548086bea5d63a02bdef29b"
+    },
+    ".context/.gitignore": {
+      "role": "index",
+      "sha256": "1c914db14a52c51de26ea0a38939ec35e6daae11f9728d4673fcbbf7487f2ca2",
+      "size": 215,
+      "normalized_sha256": "116e113abdaa007367b61428aaf5d8532d1e3f062ecadb8fab5d55c8ab0a3b3b"
+    },
+    ".context/history/commits.jsonl": {
+      "role": "index",
+      "sha256": "eaa2d390fbdb5669e1639f2d58f669081ac5723ac99307fbce5ce113422533a2",
+      "size": 617,
+      "normalized_sha256": "e507641b830ca04b36c1056bddf4bc515f4432688d4387dc4464c23f8a2f7c60"
+    },
+    ".context/history/commits.md": {
+      "role": "index",
+      "sha256": "03276870e77a34ecbfadc9996cc14ca0dedc757a6eed8995c79fd0368b44fb8a",
+      "size": 826,
+      "normalized_sha256": "08127956ebcfaa42960e58adf9ba6fcdb93f6f9e148dc380366615fc7f32aecf"
+    },
+    ".context/prefs/coding-style.md": {
+      "role": "index",
+      "sha256": "2ed887155c43f76539c5da278c620f46cfe1dc405b304f387bf93c8d62ec956f",
+      "size": 4607,
+      "normalized_sha256": "7525417606033002efcdc2ccdeeb39786d18f1c34f28f4a31a9e9c7b6893970a"
+    },
+    ".context/prefs/workflow.md": {
+      "role": "index",
+      "sha256": "cca2cae77899d949c1343f1c5b24c5269560d7830ee8dacd7b42eb9114e7818c",
+      "size": 1321,
+      "normalized_sha256": "0aceacd69b6aaba54e734b1bde307b70636c3e16746cb71f66e0a655de18354d"
+    },
     ".editorconfig": {
       "role": "index",
       "sha256": "42474df7a7c8fd9164421b84dc9bee395cd33f7249d57838f46b89d6e11cb058",
@@ -71,9 +131,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "379945f905d63a726b5cde304a257fa5c1d56004bddb49b5c3e0ae74b75c3578",
-      "size": 291,
-      "normalized_sha256": "06b9f72efa4cff195c41f49f142101269eaf51e4f654f291c5ec77372cda6199"
+      "sha256": "9daafbc9e649897fe5ce296487ab3d68e5c98c507a75eb00ae19920bddcff218",
+      "size": 1702,
+      "normalized_sha256": "bea00d9b4f865654846503a6858495f827970f74d28a021df78c7a9a88fda241"
     },
     ".markdownlint.json": {
       "role": "index",
@@ -99,6 +159,12 @@
       "size": 13258,
       "normalized_sha256": "ddb50101a5be7eb54bde0bdccb2ce15fbac13a0efed1b2851adc248c7a39bcb7"
     },
+    "CLAUDE.md": {
+      "role": "index",
+      "sha256": "8cac8941c262e9cfadb173ee6a92190f8d0f12d0f4ab4837634fd324e29f5a76",
+      "size": 7556,
+      "normalized_sha256": "38844c541ff425fc31fd6463ab4cced23fb52a3f24b7929d4f23573bf06a22ec"
+    },
     "LICENSE": {
       "role": "index",
       "sha256": "436a6d536138f203ac333858cff92a568be62797752b3adb94bcaa0f6ffe7ef6",
@@ -107,9 +173,9 @@
     },
     "README.md": {
       "role": "index",
-      "sha256": "2cbb3566e367204ecd87af4b9be51e69fe5f62db7bca7091c9e7df537c552645",
-      "size": 1699,
-      "normalized_sha256": "7aa6ca305036c4239b558d552751df529a0dc601f43c7cf42373f9160ace60eb"
+      "sha256": "04d768e6a8ed5f928457d8b969ce47c95e74d447d2d374735f77c32c2ffce8bc",
+      "size": 2539,
+      "normalized_sha256": "158aefe81811e5e37d4a6e3e4ba321454a0830efd1cd54c6bc5d513b13b8a6c9"
     },
     "Scoop-Bucket.Tests.ps1": {
       "role": "index",
@@ -119,9 +185,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c81364b64c1a583e247f73e6233262addebec4b9afa109011569a0d87159e9cb",
-      "size": 9089,
-      "normalized_sha256": "c81364b64c1a583e247f73e6233262addebec4b9afa109011569a0d87159e9cb"
+      "sha256": "cb71b462360b077bf15675891e036df0530ef2462a6a9c5d7930c601a9a25340",
+      "size": 15382,
+      "normalized_sha256": "cb71b462360b077bf15675891e036df0530ef2462a6a9c5d7930c601a9a25340"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -177,11 +243,17 @@
       "size": 459,
       "normalized_sha256": "cf4c13220d216cc3840df4df33a46c7aaebe0032e5b5c47022f8c7a5f8c772d0"
     },
+    "bucket/agency-agents-app.json": {
+      "role": "index",
+      "sha256": "935084000635919240da06910b9ac0f7f06ae882610af5a7633755f88d972c64",
+      "size": 2907,
+      "normalized_sha256": "675e8ad41e13cdfbc9a5055a00bc345bfa521596f28aa914a43465d11d4b2259"
+    },
     "bucket/aoci-code.json": {
       "role": "index",
-      "sha256": "88f1509732d95e3c9f034978eec58cf0a7699a251ea5482ab229826f030f5347",
+      "sha256": "d4074154cf64b571d2c3a20914a05b3e9db41c1c43c1dda446e3a585cbf35cd3",
       "size": 2515,
-      "normalized_sha256": "965545b654f3a14cbd6564c66e4a1b13c6dc1433a18d40e0c5e7c8796c412a38"
+      "normalized_sha256": "fe1b961ab345e02363e28cd9ce98198a0d46aa5b8277aeb7cd5f3442a32cc94f"
     },
     "bucket/app-name.json.template": {
       "role": "index",
@@ -200,6 +272,12 @@
       "sha256": "8ef6c9763763910ac953f8512adbe8c00ca4bf4341200d2bba2a132070f9f41d",
       "size": 1261,
       "normalized_sha256": "e12bfd1733a5d736dae69970ce3568a317b739104f6108f6ba3afd1684ecaec2"
+    },
+    "docs/plans/agency-agents-app.md": {
+      "role": "index",
+      "sha256": "4f9cb20a4cd5adb6a2a4da810ae63cd8a62f3dac51edb908d398ab2ede96f03f",
+      "size": 19276,
+      "normalized_sha256": "d8edfb0084a9248a9a360cef83906bff2b62b728326a0c0600187b732b294257"
     }
   },
   "managed_scope": {
