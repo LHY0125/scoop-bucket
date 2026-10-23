@@ -258,48 +258,76 @@ if ($SkipDownload -or $SkipNetwork) {
         $declared = ($arch.hash -replace '^sha256:', '').ToLower()
         Add-Result '7. Hash check' ($actual -eq $declared) $(if ($actual -eq $declared) { $actual.Substring(0,16) + '...' } else { "declared=$($declared.Substring(0,16))... actual=$($actual.Substring(0,16))..." })
 
-        # 解压列出内容。
-        # 用 7-Zip 而非 Expand-Archive：后者只认 zip，而 bucket 里存在 NSIS 安装器
-        # （.exe）、.7z、.tar.gz 等形态。7z 覆盖全部，且与 Scoop 自身的解压器一致。
-        # 排除 $PLUGINSDIR / $TEMP 与 Scoop 的 pre_install 保持一致，避免把
-        # NSIS 载荷目录当成"包内文件"而误判 bin 目标。
-        $ext = Join-Path $tmp 'x'
-        New-Item -ItemType Directory -Path $ext -Force | Out-Null
-        # 自行定位 7z：不调用 Scoop 的 Get-HelperPath（本脚本不加载 Scoop 的 lib）。
-        # 顺序：Scoop 内置 helper -> PATH 上的 7z。
-        $sevenZip = $null
-        $helper = Join-Path $scoopHome 'apps\7zip\current\7z.exe'
-        if (Test-Path -LiteralPath $helper) {
-            $sevenZip = $helper
-        } else {
-            $cmd = Get-Command 7z -CommandType Application -ErrorAction SilentlyContinue |
-                Select-Object -First 1
-            if ($cmd) { $sevenZip = $cmd.Source }
-        }
-        if (-not $sevenZip) {
-            # 不能记成 SKIP：SKIP 不计入退出码，会让"未验证"被报成 "Safe to commit"。
-            # 找不到解压器意味着 bin/shortcuts 目标无法核实，必须按失败处理。
-            Add-Result '8. Archive contents' $false '7-Zip not found; cannot verify bin/shortcuts targets'
-        } else {
-            $null = & $sevenZip x $dest "-o$ext" '-xr!$PLUGINSDIR' '-xr!$TEMP' '-y' 2>&1
-            if ($LASTEXITCODE -ne 0) {
-                Add-Result '8. Archive contents' $false "7-Zip could not extract (exit $LASTEXITCODE)"
-            } else {
-                $entries = Get-ChildItem -LiteralPath $ext -Recurse -File |
-                    ForEach-Object { $_.FullName.Substring($ext.Length + 1).Replace('\', '/') }
-                Write-Host "  archive contents:" -ForegroundColor DarkGray
-                $entries | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        # 判定「包内文件」。Scoop 的下载/解压规则（lib/decompress.ps1）：
+        #   - URL 带 #/name 片段时，下载物按 name 落盘；
+        #   - 压缩包会解压；裸 .exe 只在清单声明 innosetup 时才解压。
+        # 因此裸 .exe 的「包内文件」只有它自己，不需要 7-Zip。
+        $renameMatch = [regex]::Match($arch.url, '#/(.+)$')
+        $effectiveName = if ($renameMatch.Success) { $renameMatch.Groups[1].Value } else { $fileName }
+        $isBareExecutable = ($fileName -match '\.exe$') -and -not $json.innosetup
 
-                # 校验 bin / shortcuts 指向的文件确实存在
-                $targets = @()
-                if ($json.bin) { $targets += @($json.bin | ForEach-Object { if ($_ -is [string]) { $_ } else { $_[0] } }) }
-                if ($json.shortcuts) { $targets += @($json.shortcuts | ForEach-Object { $_[0] }) }
-                $missingBin = @($targets | Where-Object { $_ -and -not (Test-Path -LiteralPath (Join-Path $ext $_)) })
-                if ($missingBin.Count -eq 0) {
-                    Add-Result '8. Archive contents' $true "bin/shortcuts targets present: $($targets -join ', ')"
+        $entries = $null
+        if ($isBareExecutable) {
+            $entries = @($effectiveName)
+            Write-Host "  archive contents (bare executable, not extracted):" -ForegroundColor DarkGray
+        } else {
+            # 解压列出内容。
+            # 用 7-Zip 而非 Expand-Archive：后者只认 zip，而 bucket 里存在 NSIS 安装器
+            # （.exe）、.7z、.tar.gz 等形态。7z 覆盖全部，且与 Scoop 自身的解压器一致。
+            # 排除 $PLUGINSDIR / $TEMP 与 Scoop 的 pre_install 保持一致，避免把
+            # NSIS 载荷目录当成"包内文件"而误判 bin 目标。
+            $ext = Join-Path $tmp 'x'
+            New-Item -ItemType Directory -Path $ext -Force | Out-Null
+            # 自行定位 7z：不调用 Scoop 的 Get-HelperPath（本脚本不加载 Scoop 的 lib）。
+            # 顺序：Scoop 内置 helper -> PATH 上的 7z。
+            $sevenZip = $null
+            $helper = Join-Path $scoopHome 'apps\7zip\current\7z.exe'
+            if (Test-Path -LiteralPath $helper) {
+                $sevenZip = $helper
+            } else {
+                $cmd = Get-Command 7z -CommandType Application -ErrorAction SilentlyContinue |
+                    Select-Object -First 1
+                if ($cmd) { $sevenZip = $cmd.Source }
+            }
+            if (-not $sevenZip) {
+                # 不能记成 SKIP：SKIP 不计入退出码，会让"未验证"被报成 "Safe to commit"。
+                # 找不到解压器意味着 bin/shortcuts 目标无法核实，必须按失败处理。
+                Add-Result '8. Archive contents' $false '7-Zip not found; cannot verify bin/shortcuts targets'
+            } else {
+                $null = & $sevenZip x $dest "-o$ext" '-xr!$PLUGINSDIR' '-xr!$TEMP' '-y' 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Add-Result '8. Archive contents' $false "7-Zip could not extract (exit $LASTEXITCODE)"
                 } else {
-                    Add-Result '8. Archive contents' $false "not found in archive: $($missingBin -join ', ')"
+                    $entries = @(Get-ChildItem -LiteralPath $ext -Recurse -File |
+                        ForEach-Object { $_.FullName.Substring($ext.Length + 1).Replace('\', '/') })
+                    Write-Host "  archive contents:" -ForegroundColor DarkGray
                 }
+            }
+        }
+
+        if ($null -ne $entries) {
+            $entries | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+
+            # 校验 bin / shortcuts 指向的文件确实存在。
+            # bin 支持三种形态：字符串、字符串数组、[源文件, 别名] 对（Scoop 为别名建 shim）。
+            # 别名不是包内文件，只取每个元素的第一个字段；去重避免重复报告。
+            $targets = @()
+            if ($json.bin) {
+                $targets += @($json.bin | ForEach-Object { if ($_ -is [string]) { $_ } else { $_[0] } })
+            }
+            if ($json.shortcuts) { $targets += @($json.shortcuts | ForEach-Object { $_[0] }) }
+            $targets = @($targets | Where-Object { $_ } | Select-Object -Unique)
+
+            # 裸 exe 没有解压目录，改用「文件名是否在包内文件列表」比对。
+            $missingBin = if ($isBareExecutable) {
+                @($targets | Where-Object { $entries -notcontains $_ })
+            } else {
+                @($targets | Where-Object { -not (Test-Path -LiteralPath (Join-Path $ext $_)) })
+            }
+            if ($missingBin.Count -eq 0) {
+                Add-Result '8. Archive contents' $true "bin/shortcuts targets present: $($targets -join ', ')"
+            } else {
+                Add-Result '8. Archive contents' $false "not found in archive: $($missingBin -join ', ')"
             }
         }
     } catch {
