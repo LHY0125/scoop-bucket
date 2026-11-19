@@ -69,6 +69,11 @@ $v.Validate($path); $v.ErrorsAsString     # 空 = 通过
 ## 清单约定（非显然的部分）
 
 - `hash` 用**裸十六进制**，不带 `sha256:` 前缀 —— Scoop 的 autoupdate 写回时会剥掉前缀。
+- 新版 GitHub release 的每个 asset 都带 `digest`（形如 `sha256:<hex>`），autoupdate 可直接用
+  jsonpath 取，不必手算哈希（见 `bucket/termix-cli.json`）：
+  `"hash": { "url": "https://api.github.com/repos/<o>/<r>/releases/tags/v$version", "jsonpath": "$.assets[?(@.name == '<file>')].digest" }`。
+  更省事：下载 URL 形如 `github.com/<o>/<r>/releases/download/...` 时连 `hash` 块都不用写，
+  Scoop 会按 github 模式自动回查该 release 的 digest（`lib/autoupdate.ps1`）。
 - 上游把 release 标为 **prerelease** 时，GitHub 的 `/releases/latest` 会 **404**，`checkver`
   必须改用 `/releases` 列表端点取 `$[0].tag_name`。**这类非常规决策要写进清单的 `##` 注释字段**，
   否则后人"顺手优化"回去会让自动更新静默失效。
