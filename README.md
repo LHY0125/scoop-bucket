@@ -10,6 +10,7 @@ scoop install lhy/patheditor-gui    # 图形界面
 scoop install lhy/patheditor-cli    # 命令行
 scoop install lhy/aoci-code         # AOCI 认知索引 MCP 服务端
 scoop install lhy/agency-agents-app # 智能体人设浏览器（桌面应用）
+scoop install lhy/termix-cli        # Termix 服务端命令行客户端
 ```
 
 ## Manifests
@@ -21,6 +22,7 @@ scoop install lhy/agency-agents-app # 智能体人设浏览器（桌面应用）
 | `patheditor-cli`    | Command-line editor for the Windows PATH environment variable       |
 | `aoci-code`         | MCP server and CLI that keeps a versioned codebase index for agents |
 | `agency-agents-app` | Desktop app for browsing and installing the agency-agents roster    |
+| `termix-cli`        | Command-line client for Termix servers (SSH, SFTP, tunnels, Docker) |
 
 `patheditor-gui` 为免安装版（portable zip 解压即用，不写注册表、不注册卸载项）。`patheditor-cli` 为单文件 CLI。
 
@@ -38,8 +40,9 @@ scoop install lhy/agency-agents-app # 智能体人设浏览器（桌面应用）
 - [AOCI-CODE](https://github.com/aoci-spec/aoci-code)
 - [Agency Agents](https://github.com/msitarzewski/agency-agents-app)（应用本体 / [官网](https://agencyagents.app)）
 - [agency-agents](https://github.com/msitarzewski/agency-agents)（人设内容仓库）
+- [Termix CLI](https://github.com/Termix-SSH/CLI)（第三方，非本仓库作者所有）
 - [Bucket Issues](https://github.com/LHY0125/scoop-bucket/issues)
 
 ## License
 
-本仓库的清单与文档以 MIT 授权。各软件包遵循其各自许可证：`patheditor-*` 为 MIT，`aoci-code` 为 FSL-1.1-MIT，`agency-agents-app` 为 MIT。
+本仓库的清单与文档以 MIT 授权。各软件包遵循其各自许可证：`patheditor-*` 为 MIT，`aoci-code` 为 FSL-1.1-MIT，`agency-agents-app` 为 MIT，`termix-cli` 为 Apache-2.0。
