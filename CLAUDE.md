@@ -81,37 +81,3 @@ $v.Validate($path); $v.ErrorsAsString     # 空 = 通过
 
 已在 `.gitignore`、**不要提交**（含绝对路径，换机器必然失效）：
 `.mcp.json`、`.codex/config.toml`、`.claude/settings.local.json`。
-
-**但方向相反的另一类绝不能 ignore**：`aoci.txt`、`aoci.meta.txt`、`aoci.code.txt`、`AGENTS.md`。
-AOCI 的 `scan` 按 **Git 的忽略权威**取文件，被忽略的会**静默跳过** —— 不报错，只是索引建不起来。
-
-## AOCI 认知层
-
-本仓库启用了 AOCI（`aoci.txt` + `.aoci/`）。**`AGENTS.md` 中 `<!-- aoci:begin -->` 到
-`<!-- aoci:end -->` 之间是机器托管区块，不要手改**；要更新认知请走 AOCI 的 MCP 工具或 CLI。
-认知资产的改动应与业务文件在提交中区分开。
-
-## 需要读多个文件才能明白的布局
-
-
-| 路径                           | 说明                                                                                                                                          |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bucket/`                      | 唯一需要日常维护的目录 —— 应用清单                                                                                                          |
-| `bin/`                         | BucketTemplate 工具。注意`formatjson` 与 `checkver -Update` 会**就地重写**，对 `bucket/` 整目录跑会连带改掉他人清单 —— 要跑就在临时副本上跑 |
-| `scripts/`                     | 供应用安装时使用的辅助文件（模板预建，当前为空）                                                                                              |
-| `deprecated/`                  | 存放不再提供安装的历史清单（当前为空）                                                                                                        |
-| `.claude/skills/scoop-bucket/` | 本仓库专属的新增/更新/移除流程 + 校验脚本                                                                                                     |
-| `.context/`                    | 开发决策审计链；`prefs/` 是本仓库的编码规范与工作流规则                                                                                       |
-
-`.github/workflows/` 除 `ci.yml` 与 `excavator.yml` 外，`issues.yml` 与 `pull_request.yml` 接的是
-ScoopInstaller 官方 issue/PR 处理器（可自动修哈希、支持 `/verify` 评论触发）。
-
-## .context 项目上下文
-
-> 项目使用 `.context/` 管理开发决策上下文。
-
-- 编码规范：`.context/prefs/coding-style.md`
-- 工作流规则：`.context/prefs/workflow.md`
-- 决策历史：`.context/history/commits.md`
-
-**规则**：修改代码前必读 prefs/，做决策时按 workflow.md 规则记录日志。
