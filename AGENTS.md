@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to coding agents (OMP, Claude Code, Codex, Cursor, and others) when working in this repository.
 
 ## 仓库性质
 
@@ -14,6 +14,10 @@ LHY0125 的个人 Scoop bucket（桶名 `lhy`），由 `ScoopInstaller/BucketTem
 用户侧用法见 `README.md`：`scoop bucket add lhy https://github.com/LHY0125/scoop-bucket`，
 然后 `scoop install lhy/<app>`。桶内同时有自有项目与第三方包，各包遵循各自许可证。
 
+维护清单的流程与踩坑记录在 `.claude/skills/scoop-bucket/`（`SKILL.md` + `references/pitfalls.md`）。
+这是仓库自带的 skill 目录，支持 `.claude/skills` 布局的 agent（OMP、Claude Code）都会发现它；
+不要把它移到某个工具专属目录，否则其他工具就看不到了。
+
 ## 三层自动化闭环（理解本仓库的关键）
 
 三件事互相咬合，改任何一环都会影响另两环：
@@ -25,11 +29,13 @@ LHY0125 的个人 Scoop bucket（桶名 `lhy`），由 `ScoopInstaller/BucketTem
 推论：**清单写得自洽，后续版本升级就全自动**；而 `checkver`/`autoupdate` 写错**不会立刻报错**，
 只会让 excavator 静默失效 —— 这是本仓库最容易埋雷的地方。
 
+Excavator 会定期改远端，本地几乎总是落后：**push 前先 `git pull --ff-only`**（纯快进，无冲突风险）。
+
 ## 常用命令
 
 ```powershell
 # 校验单个清单（首选 —— 一次覆盖 CI 会跑的全部检查，退出码 0 = 可提交）
-Set-Location 'D:\Code\doing_exercises\programs\scoop-bucket'
+Set-Location 'D:\Code\doing_exercises\programs\Scoop-Bucket'
 & '.\.claude\skills\scoop-bucket\scripts\verify-manifest.ps1' -ManifestPath '.\bucket\<app>.json'
 #   加 -SkipNetwork 做离线自检
 
@@ -55,7 +61,8 @@ Set-Location 'D:\Code\doing_exercises\programs\scoop-bucket'
 - **禁止 0 字节文件** —— 空文件守卫藏在 `file newlines are CRLF` 测试里，失败信息会把人往行尾方向引。`.gitkeep` 一律写说明文字
 - `.ps1` 必须无 PowerShell 语法错误 —— 且**字符串字面量必须纯 ASCII**：该测试跑在 Windows PowerShell 5.1 上，用 `Get-Content` 按系统 ANSI 代码页读取，cp1252 下中文/破折号等会被解成智能引号而**截断字符串**（注释里的中文安全）。加 BOM 不行，CI 禁止 BOM
 
-> **`Write` 工具在本仓库会写出 LF**，改完文本文件必须归一化行尾；`Edit` 工具无此问题。
+> **整文件写入（agent 的 write 工具、`Set-Content` 等）通常产出 LF**，改完文本文件必须归一化行尾；
+> 就地替换（edit 类工具）一般保留原行尾，无此问题。
 
 本地复现 Schema 校验**不必装 Pester** —— 用 Scoop 自带的同一个校验器：
 
