@@ -319,10 +319,14 @@ if ($SkipDownload -or $SkipNetwork) {
             $targets = @($targets | Where-Object { $_ } | Select-Object -Unique)
 
             # 裸 exe 没有解压目录，改用「文件名是否在包内文件列表」比对。
+            # 非裸 exe 时，extract_dir 会被 Scoop 在解压后剥掉，bin 目标相对剥离后的根；
+            # 因此校验时必须把 extract_dir 重新拼回去，否则带 extract_dir 的清单会误报。
+            $extractPrefix = if ($arch.extract_dir) { $arch.extract_dir } elseif ($json.extract_dir) { $json.extract_dir } else { '' }
+            $entryRoot = if ($extractPrefix) { Join-Path $ext $extractPrefix } else { $ext }
             $missingBin = if ($isBareExecutable) {
                 @($targets | Where-Object { $entries -notcontains $_ })
             } else {
-                @($targets | Where-Object { -not (Test-Path -LiteralPath (Join-Path $ext $_)) })
+                @($targets | Where-Object { -not (Test-Path -LiteralPath (Join-Path $entryRoot $_)) })
             }
             if ($missingBin.Count -eq 0) {
                 Add-Result '8. Archive contents' $true "bin/shortcuts targets present: $($targets -join ', ')"
