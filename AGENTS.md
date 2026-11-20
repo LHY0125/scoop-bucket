@@ -29,6 +29,9 @@ LHY0125 的个人 Scoop bucket（桶名 `lhy`），由 `ScoopInstaller/BucketTem
 推论：**清单写得自洽，后续版本升级就全自动**；而 `checkver`/`autoupdate` 写错**不会立刻报错**，
 只会让 excavator 静默失效 —— 这是本仓库最容易埋雷的地方。
 
+例外：`unc` 没有 GitHub release，`checkver` 指向的 UGOS API 对 GitHub Actions 返回 404，Excavator 跟不了；
+用 `.claude/skills/scoop-bucket/scripts/update-unc.ps1` 在本地更新（见 skill 流程 B）。
+
 Excavator 会定期改远端，本地几乎总是落后：**push 前先 `git pull --ff-only`**（纯快进，无冲突风险）。
 
 ## 常用命令

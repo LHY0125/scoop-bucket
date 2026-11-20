@@ -98,6 +98,22 @@ gh run list --repo LHY0125/scoop-bucket --limit 5      # 看 Excavator 是否已
 
 随后照 A4 校验、A5 提交。**核对 diff 只动了 `version`/`url`/`hash`**，出现其他字段变化要查原因。
 
+### 特例：`unc`（UGOS 官方 CLI）
+
+`unc` 没有 GitHub release，`checkver` 指向 `api.ugnas.com`；该 API 对 GitHub Actions 出口返回 404（本地 200），Excavator 因此无法跟进。用脚本在本地更新：
+
+```powershell
+Set-Location 'D:\Code\doing_exercises\programs\Scoop-Bucket'
+# 只看是否有更新，不写文件
+& '.\.claude\skills\scoop-bucket\scripts\update-unc.ps1' -DryRun
+# 有更新时写入，并自动跑 verify-manifest
+& '.\.claude\skills\scoop-bucket\scripts\update-unc.ps1'
+```
+
+脚本流程：查 latest → 下载 Windows zip → 与同目录 `checksums.txt` 交叉校验 → 确认包内 `unc.exe` → 改写 `version`/`url`/`hash`/`extract_dir` → 跑校验（失败则还原清单）。
+
+`-Force` 对当前版本重新校验并重写；`-SkipVerify` 跳过最后的校验。
+
 ## 流程 C：移除应用
 
 1. **先向用户列明要删哪些文件并取得明确同意** —— 全局规则硬性要求，不得跳过。
