@@ -29,6 +29,7 @@ scoop install lhy/<app>    # <app> 取下方清单中的名字
 | `agency-agents-app` | [应用本体](https://github.com/msitarzewski/agency-agents-app) / [官网](https://agencyagents.app) | 浏览、安装与跟踪 agency-agents 人设的桌面应用 |
 | `termix-cli` | [Termix-SSH/CLI](https://github.com/Termix-SSH/CLI) | Termix 服务端命令行客户端：SSH 终端、远程执行、SFTP、隧道、Docker |
 | `rust-anything` | [erkamyaman/rust-anything](https://github.com/erkamyaman/rust-anything) | 把应用逐块改写成 Rust，并用原实现的行为记录校验每一步 |
+| `rscoop` | [AmarBego/Rscoop](https://github.com/AmarBego/Rscoop) | Scoop 包管理器图形界面：搜索、安装、更新、清理 |
 
 ## 绿联 NAS：三个包怎么选
 
@@ -49,6 +50,7 @@ scoop install lhy/<app>    # <app> 取下方清单中的名字
 | `aoci-code` | zip，内含 `aoci.exe` |
 | `agency-agents-app` | 上游只发 NSIS 安装器；清单用 `pre_install` 调 7-Zip 解包为免安装形态，需要 Microsoft Edge WebView2 运行时（当前 Windows 10/11 已预装） |
 | `rust-anything` | zip，包内含版本目录、README 与 CHANGELOG |
+| `rscoop` | 单文件可执行（Tauri，需要 Microsoft Edge WebView2 运行时；当前 Windows 10/11 已预装） |
 
 ## 使用提示
 
@@ -56,6 +58,7 @@ scoop install lhy/<app>    # <app> 取下方清单中的名字
 - `aoci-code`：`aoci` 与 `aoci mcp` 是同一个二进制；MCP 宿主建议指向版本稳定的 shim（`%SCOOP%\shims\aoci.exe`），`aoci init` 写入配置后需重启宿主。
 - `agency-agents-app`：安装器尚未代码签名，首次运行可能触发 SmartScreen；人设会写入它检测到的工具配置目录（如 `~/.claude/agents`），人设内容在 [agency-agents](https://github.com/msitarzewski/agency-agents) 仓库。
 - `rust-anything`：上游 Windows 仅发布 x86_64 构建；安装后运行 `rust-anything setup` 才会把 MCP 服务端与工作流技能注册给 Claude Code、Codex、Cursor、Gemini CLI、OpenCode（`setup --remove` 可撤销，改动前生成 `<file>.rust-anything.bak`）。
+- `rscoop`：应用内自带更新器可能覆盖 Scoop 管理的二进制；优先用 `scoop update rscoop` 更新，保证 Scoop 记录的版本与实际一致。
 
 ## 注意事项
 
@@ -73,4 +76,4 @@ scoop install lhy/<app>    # <app> 取下方清单中的名字
 
 ## License
 
-本仓库的清单与文档以 MIT 授权。各软件遵循自身许可证：`patheditor-*` 与 `nascli` 为 MIT，`ugos-cli` 为 GPL-3.0-or-later，`unc` 为专有许可，`aoci-code` 为 FSL-1.1-MIT，`agency-agents-app` 为 MIT，`termix-cli` 为 Apache-2.0，`rust-anything` 为 MIT。
+本仓库的清单与文档以 MIT 授权。各软件遵循自身许可证：`patheditor-*` 与 `nascli` 为 MIT，`ugos-cli` 为 GPL-3.0-or-later，`unc` 为专有许可，`aoci-code` 为 FSL-1.1-MIT，`agency-agents-app` 为 MIT，`termix-cli` 为 Apache-2.0，`rust-anything` 为 MIT，`rscoop` 为 MIT。
